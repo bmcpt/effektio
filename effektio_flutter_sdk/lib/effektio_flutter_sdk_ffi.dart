@@ -51,10 +51,12 @@ class _Box {
   bool _dropped;
   bool _moved;
   ffi.Pointer<ffi.Void> _finalizer = ffi.Pointer.fromAddress(0);
+  final Object? _context;
 
-  _Box(this._api, this._ptr, this._dropSymbol)
+  _Box(this._api, this._ptr, this._dropSymbol, {Object? context})
       : _dropped = false,
-        _moved = false;
+        _moved = false,
+        _context = context;
 
   late final _dropPtr = _api._lookup<
       ffi.NativeFunction<
@@ -99,6 +101,186 @@ class _Box {
   }
 }
 
+class FfiBufferInt8 {
+  final Api _api;
+  final _Box _box;
+
+  FfiBufferInt8._(this._api, this._box);
+
+  void drop() {
+    _box.drop();
+  }
+
+  Int8List toInt8List() {
+    final buffer = _box.borrow();
+    final addressRaw = _api._ffiBufferAddress(buffer).address;
+    final size = _api._ffiBufferSize(buffer) ~/ 1;
+    return ffi.Pointer<ffi.Int8>.fromAddress(addressRaw).asTypedList(size);
+  }
+}
+
+class FfiBufferUint8 {
+  final Api _api;
+  final _Box _box;
+
+  FfiBufferUint8._(this._api, this._box);
+
+  void drop() {
+    _box.drop();
+  }
+
+  Uint8List toUint8List() {
+    final buffer = _box.borrow();
+    final addressRaw = _api._ffiBufferAddress(buffer).address;
+    final size = _api._ffiBufferSize(buffer) ~/ 1;
+    return ffi.Pointer<ffi.Uint8>.fromAddress(addressRaw).asTypedList(size);
+  }
+}
+
+class FfiBufferInt16 {
+  final Api _api;
+  final _Box _box;
+
+  FfiBufferInt16._(this._api, this._box);
+
+  void drop() {
+    _box.drop();
+  }
+
+  Int16List toInt16List() {
+    final buffer = _box.borrow();
+    final addressRaw = _api._ffiBufferAddress(buffer).address;
+    final size = _api._ffiBufferSize(buffer) ~/ 2;
+    return ffi.Pointer<ffi.Int16>.fromAddress(addressRaw).asTypedList(size);
+  }
+}
+
+class FfiBufferUint16 {
+  final Api _api;
+  final _Box _box;
+
+  FfiBufferUint16._(this._api, this._box);
+
+  void drop() {
+    _box.drop();
+  }
+
+  Uint16List toUint16List() {
+    final buffer = _box.borrow();
+    final addressRaw = _api._ffiBufferAddress(buffer).address;
+    final size = _api._ffiBufferSize(buffer) ~/ 2;
+    return ffi.Pointer<ffi.Uint16>.fromAddress(addressRaw).asTypedList(size);
+  }
+}
+
+class FfiBufferInt32 {
+  final Api _api;
+  final _Box _box;
+
+  FfiBufferInt32._(this._api, this._box);
+
+  void drop() {
+    _box.drop();
+  }
+
+  Int32List toInt32List() {
+    final buffer = _box.borrow();
+    final addressRaw = _api._ffiBufferAddress(buffer).address;
+    final size = _api._ffiBufferSize(buffer) ~/ 4;
+    return ffi.Pointer<ffi.Int32>.fromAddress(addressRaw).asTypedList(size);
+  }
+}
+
+class FfiBufferUint32 {
+  final Api _api;
+  final _Box _box;
+
+  FfiBufferUint32._(this._api, this._box);
+
+  void drop() {
+    _box.drop();
+  }
+
+  Uint32List toUint32List() {
+    final buffer = _box.borrow();
+    final addressRaw = _api._ffiBufferAddress(buffer).address;
+    final size = _api._ffiBufferSize(buffer) ~/ 4;
+    return ffi.Pointer<ffi.Uint32>.fromAddress(addressRaw).asTypedList(size);
+  }
+}
+
+class FfiBufferInt64 {
+  final Api _api;
+  final _Box _box;
+
+  FfiBufferInt64._(this._api, this._box);
+
+  void drop() {
+    _box.drop();
+  }
+
+  Int64List toInt64List() {
+    final buffer = _box.borrow();
+    final addressRaw = _api._ffiBufferAddress(buffer).address;
+    final size = _api._ffiBufferSize(buffer) ~/ 8;
+    return ffi.Pointer<ffi.Int64>.fromAddress(addressRaw).asTypedList(size);
+  }
+}
+
+class FfiBufferUint64 {
+  final Api _api;
+  final _Box _box;
+
+  FfiBufferUint64._(this._api, this._box);
+
+  void drop() {
+    _box.drop();
+  }
+
+  Uint64List toUint64List() {
+    final buffer = _box.borrow();
+    final addressRaw = _api._ffiBufferAddress(buffer).address;
+    final size = _api._ffiBufferSize(buffer) ~/ 8;
+    return ffi.Pointer<ffi.Uint64>.fromAddress(addressRaw).asTypedList(size);
+  }
+}
+
+class FfiBufferFloat32 {
+  final Api _api;
+  final _Box _box;
+
+  FfiBufferFloat32._(this._api, this._box);
+
+  void drop() {
+    _box.drop();
+  }
+
+  Float32List toFloat32List() {
+    final buffer = _box.borrow();
+    final addressRaw = _api._ffiBufferAddress(buffer).address;
+    final size = _api._ffiBufferSize(buffer) ~/ 4;
+    return ffi.Pointer<ffi.Float>.fromAddress(addressRaw).asTypedList(size);
+  }
+}
+
+class FfiBufferFloat64 {
+  final Api _api;
+  final _Box _box;
+
+  FfiBufferFloat64._(this._api, this._box);
+
+  void drop() {
+    _box.drop();
+  }
+
+  Float64List toFloat64List() {
+    final buffer = _box.borrow();
+    final addressRaw = _api._ffiBufferAddress(buffer).address;
+    final size = _api._ffiBufferSize(buffer) ~/ 8;
+    return ffi.Pointer<ffi.Double>.fromAddress(addressRaw).asTypedList(size);
+  }
+}
+
 /// Implements Iterable and Iterator for a rust iterator.
 class Iter<T> extends Iterable<T> implements Iterator<T> {
   final _Box _box;
@@ -127,6 +309,27 @@ class Iter<T> extends Iterable<T> implements Iterator<T> {
 
   void drop() {
     _box.drop();
+  }
+}
+
+abstract class CustomIterable<T> {
+  int get length;
+  T elementAt(int index);
+}
+
+class CustomIterator<T, U extends CustomIterable<T>> implements Iterator<T> {
+  final U _iterable;
+  int _currentIndex = -1;
+
+  CustomIterator(this._iterable);
+
+  @override
+  T get current => _iterable.elementAt(_currentIndex);
+
+  @override
+  bool moveNext() {
+    _currentIndex++;
+    return _currentIndex < _iterable.length;
   }
 }
 
@@ -454,52 +657,6 @@ class Api {
     return tmp9;
   }
 
-  String echo(
-    String inp,
-  ) {
-    final tmp0 = inp;
-    var tmp1 = 0;
-    var tmp2 = 0;
-    var tmp3 = 0;
-    final tmp0_0 = utf8.encode(tmp0);
-    tmp2 = tmp0_0.length;
-    final ffi.Pointer<ffi.Uint8> tmp1_0 = this.__allocate(tmp2 * 1, 1);
-    final Uint8List tmp1_1 = tmp1_0.asTypedList(tmp2);
-    tmp1_1.setAll(0, tmp0_0);
-    tmp1 = tmp1_0.address;
-    tmp3 = tmp2;
-    final tmp4 = _echo(
-      tmp1,
-      tmp2,
-      tmp3,
-    );
-    final tmp6 = tmp4.arg0;
-    final tmp7 = tmp4.arg1;
-    final tmp8 = tmp4.arg2;
-    final tmp9 = tmp4.arg3;
-    final tmp10 = tmp4.arg4;
-    final tmp11 = tmp4.arg5;
-    final tmp12 = tmp4.arg6;
-    if (tmp6 == 0) {
-      final ffi.Pointer<ffi.Uint8> tmp7_0 = ffi.Pointer.fromAddress(tmp7);
-      final tmp6_0 = utf8.decode(tmp7_0.asTypedList(tmp8));
-      if (tmp8 > 0) {
-        final ffi.Pointer<ffi.Void> tmp7_0;
-        tmp7_0 = ffi.Pointer.fromAddress(tmp7);
-        this.__deallocate(tmp7_0, tmp9, 1);
-      }
-      throw tmp6_0;
-    }
-    final ffi.Pointer<ffi.Uint8> tmp10_0 = ffi.Pointer.fromAddress(tmp10);
-    final tmp5 = utf8.decode(tmp10_0.asTypedList(tmp11));
-    if (tmp12 > 0) {
-      final ffi.Pointer<ffi.Void> tmp10_0;
-      tmp10_0 = ffi.Pointer.fromAddress(tmp10);
-      this.__deallocate(tmp10_0, tmp12 * 1, 1);
-    }
-    return tmp5;
-  }
-
   late final _allocatePtr = _lookup<
       ffi.NativeFunction<
           ffi.Pointer<ffi.Uint8> Function(ffi.IntPtr, ffi.IntPtr)>>("allocate");
@@ -514,6 +671,19 @@ class Api {
 
   late final _deallocate = _deallocatePtr
       .asFunction<void Function(ffi.Pointer<ffi.Uint8>, int, int)>();
+
+  late final _ffiBufferAddressPtr =
+      _lookup<ffi.NativeFunction<ffi.Pointer<ffi.Uint8> Function(ffi.IntPtr)>>(
+          "__ffi_buffer_address");
+
+  late final _ffiBufferAddress =
+      _ffiBufferAddressPtr.asFunction<ffi.Pointer<ffi.Uint8> Function(int)>();
+
+  late final _ffiBufferSizePtr =
+      _lookup<ffi.NativeFunction<ffi.Uint32 Function(ffi.IntPtr)>>(
+          "__ffi_buffer_size");
+
+  late final _ffiBufferSize = _ffiBufferSizePtr.asFunction<int Function(int)>();
 
   Client? __loginNewClientFuturePoll(
     int boxed,
@@ -700,7 +870,7 @@ class Api {
     return tmp7;
   }
 
-  List<int>? __roomAvatarFuturePoll(
+  FfiBufferUint8? __roomAvatarFuturePoll(
     int boxed,
     int postCobject,
     int port,
@@ -725,8 +895,6 @@ class Api {
     final tmp11 = tmp6.arg3;
     final tmp12 = tmp6.arg4;
     final tmp13 = tmp6.arg5;
-    final tmp14 = tmp6.arg6;
-    final tmp15 = tmp6.arg7;
     if (tmp8 == 0) {
       return null;
     }
@@ -740,13 +908,57 @@ class Api {
       }
       throw tmp9_0;
     }
-    final ffi.Pointer<ffi.Uint8> tmp13_0 = ffi.Pointer.fromAddress(tmp13);
-    final tmp7 = tmp13_0.asTypedList(tmp14).toList();
-    if (tmp15 > 0) {
-      final ffi.Pointer<ffi.Void> tmp13_0;
-      tmp13_0 = ffi.Pointer.fromAddress(tmp13);
-      this.__deallocate(tmp13_0, tmp15 * 1, 1);
+    final ffi.Pointer<ffi.Void> tmp13_0 = ffi.Pointer.fromAddress(tmp13);
+    final tmp13_1 = _Box(this, tmp13_0, "drop_box_FfiBuffer");
+    tmp13_1._finalizer = this._registerFinalizer(tmp13_1);
+    final tmp14 = FfiBufferUint8._(this, tmp13_1);
+    final tmp7 = tmp14;
+    return tmp7;
+  }
+
+  FfiListRoomMember? __roomActiveMembersFuturePoll(
+    int boxed,
+    int postCobject,
+    int port,
+  ) {
+    final tmp0 = boxed;
+    final tmp2 = postCobject;
+    final tmp4 = port;
+    var tmp1 = 0;
+    var tmp3 = 0;
+    var tmp5 = 0;
+    tmp1 = tmp0;
+    tmp3 = tmp2;
+    tmp5 = tmp4;
+    final tmp6 = _roomActiveMembersFuturePoll(
+      tmp1,
+      tmp3,
+      tmp5,
+    );
+    final tmp8 = tmp6.arg0;
+    final tmp9 = tmp6.arg1;
+    final tmp10 = tmp6.arg2;
+    final tmp11 = tmp6.arg3;
+    final tmp12 = tmp6.arg4;
+    final tmp13 = tmp6.arg5;
+    if (tmp8 == 0) {
+      return null;
     }
+    if (tmp9 == 0) {
+      final ffi.Pointer<ffi.Uint8> tmp10_0 = ffi.Pointer.fromAddress(tmp10);
+      final tmp9_0 = utf8.decode(tmp10_0.asTypedList(tmp11));
+      if (tmp11 > 0) {
+        final ffi.Pointer<ffi.Void> tmp10_0;
+        tmp10_0 = ffi.Pointer.fromAddress(tmp10);
+        this.__deallocate(tmp10_0, tmp12, 1);
+      }
+      throw tmp9_0;
+    }
+    final ffi.Pointer<ffi.Void> tmp13_0 = ffi.Pointer.fromAddress(tmp13);
+    final tmp13_1 = _Box(this, tmp13_0, "drop_box_FfiListRoomMember");
+    tmp13_1._finalizer = this._registerFinalizer(tmp13_1);
+    final tmp14 = FfiListRoomMember._(this, tmp13_1);
+    final tmp7 = tmp14;
     return tmp7;
   }
 
@@ -978,7 +1190,7 @@ class Api {
     return tmp7;
   }
 
-  List<int>? __clientAvatarFuturePoll(
+  FfiBufferUint8? __clientAvatarFuturePoll(
     int boxed,
     int postCobject,
     int port,
@@ -1003,8 +1215,6 @@ class Api {
     final tmp11 = tmp6.arg3;
     final tmp12 = tmp6.arg4;
     final tmp13 = tmp6.arg5;
-    final tmp14 = tmp6.arg6;
-    final tmp15 = tmp6.arg7;
     if (tmp8 == 0) {
       return null;
     }
@@ -1018,50 +1228,12 @@ class Api {
       }
       throw tmp9_0;
     }
-    final ffi.Pointer<ffi.Uint8> tmp13_0 = ffi.Pointer.fromAddress(tmp13);
-    final tmp7 = tmp13_0.asTypedList(tmp14).toList();
-    if (tmp15 > 0) {
-      final ffi.Pointer<ffi.Void> tmp13_0;
-      tmp13_0 = ffi.Pointer.fromAddress(tmp13);
-      this.__deallocate(tmp13_0, tmp15 * 1, 1);
-    }
+    final ffi.Pointer<ffi.Void> tmp13_0 = ffi.Pointer.fromAddress(tmp13);
+    final tmp13_1 = _Box(this, tmp13_0, "drop_box_FfiBuffer");
+    tmp13_1._finalizer = this._registerFinalizer(tmp13_1);
+    final tmp14 = FfiBufferUint8._(this, tmp13_1);
+    final tmp7 = tmp14;
     return tmp7;
-  }
-
-  Room? __clientConversationsStreamPoll(
-    int boxed,
-    int postCobject,
-    int port,
-    int done,
-  ) {
-    final tmp0 = boxed;
-    final tmp2 = postCobject;
-    final tmp4 = port;
-    final tmp6 = done;
-    var tmp1 = 0;
-    var tmp3 = 0;
-    var tmp5 = 0;
-    var tmp7 = 0;
-    tmp1 = tmp0;
-    tmp3 = tmp2;
-    tmp5 = tmp4;
-    tmp7 = tmp6;
-    final tmp8 = _clientConversationsStreamPoll(
-      tmp1,
-      tmp3,
-      tmp5,
-      tmp7,
-    );
-    final tmp10 = tmp8.arg0;
-    final tmp11 = tmp8.arg1;
-    if (tmp10 == 0) {
-      return null;
-    }
-    final ffi.Pointer<ffi.Void> tmp11_0 = ffi.Pointer.fromAddress(tmp11);
-    final tmp11_1 = _Box(this, tmp11_0, "drop_box_Room");
-    tmp11_1._finalizer = this._registerFinalizer(tmp11_1);
-    final tmp9 = Room._(this, tmp11_1);
-    return tmp9;
   }
 
   late final _initLoggingPtr = _lookup<
@@ -1146,20 +1318,6 @@ class Api {
     int,
     int,
   )>();
-  late final _echoPtr = _lookup<
-      ffi.NativeFunction<
-          _EchoReturn Function(
-    ffi.Int64,
-    ffi.Uint64,
-    ffi.Uint64,
-  )>>("__echo");
-
-  late final _echo = _echoPtr.asFunction<
-      _EchoReturn Function(
-    int,
-    int,
-    int,
-  )>();
   late final _roomDisplayNamePtr = _lookup<
       ffi.NativeFunction<
           ffi.Int64 Function(
@@ -1177,6 +1335,16 @@ class Api {
   )>>("__Room_avatar");
 
   late final _roomAvatar = _roomAvatarPtr.asFunction<
+      int Function(
+    int,
+  )>();
+  late final _roomActiveMembersPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int64 Function(
+    ffi.Int64,
+  )>>("__Room_active_members");
+
+  late final _roomActiveMembers = _roomActiveMembersPtr.asFunction<
       int Function(
     int,
   )>();
@@ -1353,6 +1521,21 @@ class Api {
     int,
     int,
   )>();
+  late final _roomActiveMembersFuturePollPtr = _lookup<
+      ffi.NativeFunction<
+          _RoomActiveMembersFuturePollReturn Function(
+    ffi.Int64,
+    ffi.Int64,
+    ffi.Int64,
+  )>>("__Room_active_members_future_poll");
+
+  late final _roomActiveMembersFuturePoll =
+      _roomActiveMembersFuturePollPtr.asFunction<
+          _RoomActiveMembersFuturePollReturn Function(
+    int,
+    int,
+    int,
+  )>();
   late final _clientRestoreTokenFuturePollPtr = _lookup<
       ffi.NativeFunction<
           _ClientRestoreTokenFuturePollReturn Function(
@@ -1441,23 +1624,59 @@ class Api {
     int,
     int,
   )>();
-  late final _clientConversationsStreamPollPtr = _lookup<
-      ffi.NativeFunction<
-          _ClientConversationsStreamPollReturn Function(
-    ffi.Int64,
-    ffi.Int64,
-    ffi.Int64,
-    ffi.Int64,
-  )>>("__Client_conversations_stream_poll");
+  FfiListRoom createFfiListRoom() {
+    final ffi.Pointer<ffi.Void> list_ptr =
+        ffi.Pointer.fromAddress(_ffiListRoomCreate());
+    final list_box = _Box(this, list_ptr, "drop_box_FfiListRoom");
+    return FfiListRoom._(this, list_box);
+  }
 
-  late final _clientConversationsStreamPoll =
-      _clientConversationsStreamPollPtr.asFunction<
-          _ClientConversationsStreamPollReturn Function(
-    int,
-    int,
-    int,
-    int,
-  )>();
+  late final _ffiListRoomCreatePtr =
+      _lookup<ffi.NativeFunction<ffi.IntPtr Function()>>("__FfiListRoomCreate");
+
+  late final _ffiListRoomCreate =
+      _ffiListRoomCreatePtr.asFunction<int Function()>();
+
+  late final _ffiListRoomLenPtr =
+      _lookup<ffi.NativeFunction<ffi.Uint32 Function(ffi.IntPtr)>>(
+          "__FfiListRoomLen");
+
+  late final _ffiListRoomLen =
+      _ffiListRoomLenPtr.asFunction<int Function(int)>();
+
+  late final _ffiListRoomElementAtPtr =
+      _lookup<ffi.NativeFunction<ffi.IntPtr Function(ffi.IntPtr, ffi.Uint32)>>(
+          "__FfiListRoomElementAt");
+
+  late final _ffiListRoomElementAt =
+      _ffiListRoomElementAtPtr.asFunction<int Function(int, int)>();
+  FfiListRoomMember createFfiListRoomMember() {
+    final ffi.Pointer<ffi.Void> list_ptr =
+        ffi.Pointer.fromAddress(_ffiListRoomMemberCreate());
+    final list_box = _Box(this, list_ptr, "drop_box_FfiListRoomMember");
+    return FfiListRoomMember._(this, list_box);
+  }
+
+  late final _ffiListRoomMemberCreatePtr =
+      _lookup<ffi.NativeFunction<ffi.IntPtr Function()>>(
+          "__FfiListRoomMemberCreate");
+
+  late final _ffiListRoomMemberCreate =
+      _ffiListRoomMemberCreatePtr.asFunction<int Function()>();
+
+  late final _ffiListRoomMemberLenPtr =
+      _lookup<ffi.NativeFunction<ffi.Uint32 Function(ffi.IntPtr)>>(
+          "__FfiListRoomMemberLen");
+
+  late final _ffiListRoomMemberLen =
+      _ffiListRoomMemberLenPtr.asFunction<int Function(int)>();
+
+  late final _ffiListRoomMemberElementAtPtr =
+      _lookup<ffi.NativeFunction<ffi.IntPtr Function(ffi.IntPtr, ffi.Uint32)>>(
+          "__FfiListRoomMemberElementAt");
+
+  late final _ffiListRoomMemberElementAt =
+      _ffiListRoomMemberElementAtPtr.asFunction<int Function(int, int)>();
 }
 
 class Room {
@@ -1482,7 +1701,7 @@ class Room {
   }
 
   /// The avatar of the room
-  Future<List<int>> avatar() {
+  Future<FfiBufferUint8> avatar() {
     var tmp0 = 0;
     tmp0 = _box.borrow();
     final tmp1 = _api._roomAvatar(
@@ -1495,6 +1714,32 @@ class Room {
     final tmp2 = _nativeFuture(tmp3_1, _api.__roomAvatarFuturePoll);
     return tmp2;
   }
+
+  Future<FfiListRoomMember> activeMembers() {
+    var tmp0 = 0;
+    tmp0 = _box.borrow();
+    final tmp1 = _api._roomActiveMembers(
+      tmp0,
+    );
+    final tmp3 = tmp1;
+    final ffi.Pointer<ffi.Void> tmp3_0 = ffi.Pointer.fromAddress(tmp3);
+    final tmp3_1 = _Box(_api, tmp3_0, "__Room_active_members_future_drop");
+    tmp3_1._finalizer = _api._registerFinalizer(tmp3_1);
+    final tmp2 = _nativeFuture(tmp3_1, _api.__roomActiveMembersFuturePoll);
+    return tmp2;
+  }
+
+  /// Manually drops the object and unregisters the FinalizableHandle.
+  void drop() {
+    _box.drop();
+  }
+}
+
+class RoomMember {
+  final Api _api;
+  final _Box _box;
+
+  RoomMember._(this._api, this._box);
 
   /// Manually drops the object and unregisters the FinalizableHandle.
   void drop() {
@@ -1620,7 +1865,7 @@ class Client {
   }
 
   /// The avatar of the client
-  Future<List<int>> avatar() {
+  Future<FfiBufferUint8> avatar() {
     var tmp0 = 0;
     tmp0 = _box.borrow();
     final tmp1 = _api._clientAvatar(
@@ -1635,7 +1880,7 @@ class Client {
   }
 
   /// The conversations the user is involved in
-  Stream<Room> conversations() {
+  FfiListRoom conversations() {
     var tmp0 = 0;
     tmp0 = _box.borrow();
     final tmp1 = _api._clientConversations(
@@ -1643,9 +1888,10 @@ class Client {
     );
     final tmp3 = tmp1;
     final ffi.Pointer<ffi.Void> tmp3_0 = ffi.Pointer.fromAddress(tmp3);
-    final tmp3_1 = _Box(_api, tmp3_0, "__Client_conversations_stream_drop");
+    final tmp3_1 = _Box(_api, tmp3_0, "drop_box_FfiListRoom");
     tmp3_1._finalizer = _api._registerFinalizer(tmp3_1);
-    final tmp2 = _nativeStream(tmp3_1, _api.__clientConversationsStreamPoll);
+    final tmp4 = FfiListRoom._(_api, tmp3_1);
+    final tmp2 = tmp4;
     return tmp2;
   }
 
@@ -1664,23 +1910,6 @@ class _InitLoggingReturn extends ffi.Struct {
   external int arg2;
   @ffi.Uint64()
   external int arg3;
-}
-
-class _EchoReturn extends ffi.Struct {
-  @ffi.Uint8()
-  external int arg0;
-  @ffi.Int64()
-  external int arg1;
-  @ffi.Uint64()
-  external int arg2;
-  @ffi.Uint64()
-  external int arg3;
-  @ffi.Int64()
-  external int arg4;
-  @ffi.Uint64()
-  external int arg5;
-  @ffi.Uint64()
-  external int arg6;
 }
 
 class _LoginNewClientFuturePollReturn extends ffi.Struct {
@@ -1760,10 +1989,21 @@ class _RoomAvatarFuturePollReturn extends ffi.Struct {
   external int arg4;
   @ffi.Int64()
   external int arg5;
+}
+
+class _RoomActiveMembersFuturePollReturn extends ffi.Struct {
+  @ffi.Uint8()
+  external int arg0;
+  @ffi.Uint8()
+  external int arg1;
+  @ffi.Int64()
+  external int arg2;
   @ffi.Uint64()
-  external int arg6;
+  external int arg3;
   @ffi.Uint64()
-  external int arg7;
+  external int arg4;
+  @ffi.Int64()
+  external int arg5;
 }
 
 class _ClientRestoreTokenFuturePollReturn extends ffi.Struct {
@@ -1862,15 +2102,77 @@ class _ClientAvatarFuturePollReturn extends ffi.Struct {
   external int arg4;
   @ffi.Int64()
   external int arg5;
-  @ffi.Uint64()
-  external int arg6;
-  @ffi.Uint64()
-  external int arg7;
 }
 
-class _ClientConversationsStreamPollReturn extends ffi.Struct {
-  @ffi.Uint8()
-  external int arg0;
-  @ffi.Int64()
-  external int arg1;
+class FfiListRoom extends Iterable<Room> implements CustomIterable<Room> {
+  final Api _api;
+  final _Box _box;
+
+  FfiListRoom._(this._api, this._box);
+
+  @override
+  Iterator<Room> get iterator => CustomIterator(this);
+
+  @override
+  int get length {
+    return _api._ffiListRoomLen(_box.borrow());
+  }
+
+  ///List object owns the elements, and objects returned by this method hold onto the list object ensuring the pointed to element isn/t dropped.
+  @override
+  Room elementAt(int index) {
+    final address = _api._ffiListRoomElementAt(_box.borrow(), index);
+    final reference = _Box(
+      _api,
+      ffi.Pointer.fromAddress(address),
+      "drop_box_Leak",
+      context: this,
+    );
+    return Room._(_api, reference);
+  }
+
+  Room operator [](int index) {
+    return elementAt(index);
+  }
+
+  void drop() {
+    _box.drop();
+  }
+}
+
+class FfiListRoomMember extends Iterable<RoomMember>
+    implements CustomIterable<RoomMember> {
+  final Api _api;
+  final _Box _box;
+
+  FfiListRoomMember._(this._api, this._box);
+
+  @override
+  Iterator<RoomMember> get iterator => CustomIterator(this);
+
+  @override
+  int get length {
+    return _api._ffiListRoomMemberLen(_box.borrow());
+  }
+
+  ///List object owns the elements, and objects returned by this method hold onto the list object ensuring the pointed to element isn/t dropped.
+  @override
+  RoomMember elementAt(int index) {
+    final address = _api._ffiListRoomMemberElementAt(_box.borrow(), index);
+    final reference = _Box(
+      _api,
+      ffi.Pointer.fromAddress(address),
+      "drop_box_Leak",
+      context: this,
+    );
+    return RoomMember._(_api, reference);
+  }
+
+  RoomMember operator [](int index) {
+    return elementAt(index);
+  }
+
+  void drop() {
+    _box.drop();
+  }
 }

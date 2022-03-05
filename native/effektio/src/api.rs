@@ -1,3 +1,4 @@
+use crate::platform;
 use anyhow::{bail, Result};
 use derive_builder::Builder;
 use effektio_core::RestoreToken;
@@ -12,27 +13,9 @@ use matrix_sdk::{
     Client as MatrixClient, LoopCtrl, Session,
 };
 use parking_lot::RwLock;
-use serde::{Deserialize, Serialize};
-use serde_json;
 use std::sync::Arc;
 use tokio::runtime;
 use url::Url;
-
-#[cfg(target_os = "android")]
-use crate::android as platform;
-
-#[cfg(not(target_os = "android"))]
-mod platform {
-    pub(super) fn new_client_config(
-        base_path: String,
-        home: String,
-    ) -> anyhow::Result<matrix_sdk::config::ClientConfig> {
-        anyhow::bail!("not implemented for current platform")
-    }
-    pub(super) fn init_logging(filter: Option<String>) -> anyhow::Result<()> {
-        anyhow::bail!("not implemented for current platform")
-    }
-}
 
 lazy_static! {
     static ref RUNTIME: runtime::Runtime =
@@ -44,13 +27,13 @@ ffi_gen_macro::ffi_gen!("native/effektio/api.rsh");
 #[derive(Default, Builder, Debug)]
 pub struct ClientState {
     #[builder(default)]
-    is_guest: bool,
+    pub is_guest: bool,
     #[builder(default)]
-    has_first_synced: bool,
+    pub has_first_synced: bool,
     #[builder(default)]
-    is_syncing: bool,
+    pub is_syncing: bool,
     #[builder(default)]
-    should_stop_syncing: bool,
+    pub should_stop_syncing: bool,
 }
 
 #[derive(Clone)]
@@ -63,6 +46,10 @@ pub struct Room {
     room: MatrixRoom,
 }
 
+pub struct RoomMember {
+    member: matrix_sdk::RoomMember,
+}
+
 impl Room {
     async fn display_name(&self) -> Result<String> {
         let r = self.room.clone();
@@ -71,10 +58,42 @@ impl Room {
             .await?
     }
 
-    pub async fn avatar(&self) -> Result<Vec<u8>> {
+    pub async fn avatar(&self) -> Result<api::FfiBuffer<u8>> {
         let r = self.room.clone();
         RUNTIME
-            .spawn(async move { Ok(r.avatar(MediaFormat::File).await?.expect("No avatar")) })
+            .spawn(async move {
+                Ok(api::FfiBuffer::new(
+                    r.avatar(MediaFormat::File).await?.expect("No avatar"),
+                ))
+            })
+            .await?
+    }
+
+    pub async fn active_members(&self) -> Result<Vec<RoomMember>> {
+        let r = self.room.clone();
+        RUNTIME
+            .spawn(async move {
+                Ok(r.active_members()
+                    .await
+                    .expect("No members")
+                    .into_iter()
+                    .map(|member| RoomMember { member })
+                    .collect())
+            })
+            .await?
+    }
+
+    pub async fn active_members_no_sync(&self) -> Result<Vec<RoomMember>> {
+        let r = self.room.clone();
+        RUNTIME
+            .spawn(async move {
+                Ok(r.active_members_no_sync()
+                    .await
+                    .expect("No members")
+                    .into_iter()
+                    .map(|member| RoomMember { member })
+                    .collect())
+            })
             .await?
     }
 }
@@ -117,7 +136,7 @@ impl Client {
                     } else if !state.read().is_syncing {
                         state.write().is_syncing = true;
                     }
-                    return LoopCtrl::Continue;
+                    LoopCtrl::Continue
                 })
                 .await;
         });
@@ -149,9 +168,9 @@ impl Client {
         })?)
     }
 
-    pub fn conversations(&self) -> stream::Iter<std::vec::IntoIter<Room>> {
+    pub fn conversations(&self) -> Vec<Room> {
         let r: Vec<_> = self.rooms().into_iter().map(|room| Room { room }).collect();
-        stream::iter(r.into_iter())
+        r
     }
 
     // pub async fn get_mxcuri_media(&self, uri: String) -> Result<Vec<u8>> {
@@ -205,19 +224,21 @@ impl Client {
             .await?
     }
 
-    pub async fn avatar(&self) -> Result<Vec<u8>> {
+    pub async fn avatar(&self) -> Result<api::FfiBuffer<u8>> {
         let l = self.client.clone();
         RUNTIME
             .spawn(async move {
                 let uri = l.avatar_url().await?.expect("No avatar Url given");
-                Ok(l.get_media_content(
-                    &MediaRequest {
-                        media_type: MediaType::Uri(uri),
-                        format: MediaFormat::File,
-                    },
-                    true,
-                )
-                .await?)
+                Ok(api::FfiBuffer::new(
+                    l.get_media_content(
+                        &MediaRequest {
+                            media_type: MediaType::Uri(uri),
+                            format: MediaFormat::File,
+                        },
+                        true,
+                    )
+                    .await?,
+                ))
             })
             .await?
     }
@@ -230,7 +251,7 @@ pub async fn guest_client(base_path: String, homeurl: String) -> Result<Client> 
     guest_registration.kind = register::RegistrationKind::Guest;
     RUNTIME
         .spawn(async move {
-            let client = MatrixClient::new_with_config(homeserver, config)?;
+            let client = MatrixClient::new_with_config(homeserver, config).await?;
             let register = client.register(guest_registration).await?;
             let session = Session {
                 access_token: register.access_token.expect("no access token given"),
@@ -262,7 +283,7 @@ pub async fn login_with_token(base_path: String, restore_token: String) -> Resul
     // First we need to log in.
     RUNTIME
         .spawn(async move {
-            let client = MatrixClient::new_with_config(homeserver, config)?;
+            let client = MatrixClient::new_with_config(homeserver, config).await?;
             client.restore_login(session).await?;
             let c = Client::new(
                 client,
@@ -294,10 +315,6 @@ pub async fn login_new_client(
             Ok(c)
         })
         .await?
-}
-
-pub fn echo(inp: String) -> Result<String> {
-    Ok(String::from(inp))
 }
 
 fn init_logging(filter: Option<String>) -> Result<()> {
