@@ -9,13 +9,15 @@ pub use matrix_sdk::ruma::{
 };
 use matrix_sdk::{
     media::{MediaFormat, MediaRequest, MediaType},
-    room::Room as MatrixRoom,
     Client as MatrixClient, LoopCtrl, Session,
 };
 use parking_lot::RwLock;
 use std::sync::Arc;
+use matrix_sdk::room::MessagesOptions;
+use matrix_sdk::ruma::events::AnyRoomEvent;
 use tokio::runtime;
 use url::Url;
+use effektio_core::ruma::api::client::r0::message::get_message_events::Direction;
 
 lazy_static! {
     static ref RUNTIME: runtime::Runtime =
@@ -42,24 +44,36 @@ pub struct Client {
     state: Arc<RwLock<ClientState>>,
 }
 
-pub struct Room {
-    room: MatrixRoom,
+macro_rules! wrap_simple_type {
+    ($orig:ty, $new:ident) => {
+        pub struct $new {
+            inner: $orig,
+        }
+
+        impl std::ops::Deref for $new {
+            type Target = $orig;
+            fn deref(&self) -> &$orig {
+                &self.inner
+            }
+        }
+    }
 }
 
-pub struct RoomMember {
-    member: matrix_sdk::RoomMember,
-}
+wrap_simple_type!(matrix_sdk::room::Room, Room);
+wrap_simple_type!(matrix_sdk::RoomMember, RoomMember);
+wrap_simple_type!(matrix_sdk::room::Messages, Messages);
+wrap_simple_type!(matrix_sdk::deserialized_responses::RoomEvent, RoomEvent);
 
 impl Room {
     async fn display_name(&self) -> Result<String> {
-        let r = self.room.clone();
+        let r = self.inner.clone();
         RUNTIME
             .spawn(async move { Ok(r.display_name().await?) })
             .await?
     }
 
     pub async fn avatar(&self) -> Result<api::FfiBuffer<u8>> {
-        let r = self.room.clone();
+        let r = self.inner.clone();
         RUNTIME
             .spawn(async move {
                 Ok(api::FfiBuffer::new(
@@ -70,38 +84,56 @@ impl Room {
     }
 
     pub async fn active_members(&self) -> Result<Vec<RoomMember>> {
-        let r = self.room.clone();
+        let r = self.inner.clone();
         RUNTIME
             .spawn(async move {
                 Ok(r.active_members()
                     .await
                     .expect("No members")
                     .into_iter()
-                    .map(|member| RoomMember { member })
+                    .map(|inner| RoomMember { inner })
                     .collect())
             })
             .await?
     }
 
     pub async fn active_members_no_sync(&self) -> Result<Vec<RoomMember>> {
-        let r = self.room.clone();
+        let r = self.inner.clone();
         RUNTIME
             .spawn(async move {
                 Ok(r.active_members_no_sync()
                     .await
                     .expect("No members")
                     .into_iter()
-                    .map(|member| RoomMember { member })
+                    .map(|inner| RoomMember { inner })
                     .collect())
+            })
+            .await?
+    }
+
+    pub async fn messages(&self, start: String, forward: bool) -> Result<Messages> {
+        let r = self.inner.clone();
+        RUNTIME
+            .spawn(async move {
+                r.messages(MessagesOptions::new(start.as_str(), if forward { Direction::Forward } else { Direction::Backward })).await
+                    .map(|inner| Messages { inner })
+                    .map_err(|e| e.into())
             })
             .await?
     }
 }
 
-impl std::ops::Deref for Room {
-    type Target = MatrixRoom;
-    fn deref(&self) -> &MatrixRoom {
-        &self.room
+impl Messages {
+    fn room_events(&self) -> Vec<RoomEvent> {
+        self.inner.chunk.iter()
+            .map(|inner| RoomEvent { inner: inner.clone() })
+            .collect()
+    }
+}
+
+impl RoomEvent {
+    fn f(&self) {
+        // self.inner.event.
     }
 }
 
@@ -169,8 +201,7 @@ impl Client {
     }
 
     pub fn conversations(&self) -> Vec<Room> {
-        let r: Vec<_> = self.rooms().into_iter().map(|room| Room { room }).collect();
-        r
+        self.rooms().into_iter().map(|inner| Room { inner }).collect()
     }
 
     // pub async fn get_mxcuri_media(&self, uri: String) -> Result<Vec<u8>> {
@@ -196,8 +227,8 @@ impl Client {
         let l = self.client.clone();
         RUNTIME
             .spawn(async move {
-                if let Some(room) = l.get_room(&room_id) {
-                    return Ok(Room { room });
+                if let Some(inner) = l.get_room(&room_id) {
+                    return Ok(Room { inner });
                 }
                 bail!("Room not found")
             })
@@ -237,7 +268,7 @@ impl Client {
                         },
                         true,
                     )
-                    .await?,
+                        .await?,
                 ))
             })
             .await?

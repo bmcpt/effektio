@@ -31,3 +31,5 @@ build/
 linux/libeffektio.so
 macos/libeffektio.dylib
 windows/effektio.dll
+
+lib/effektio_flutter_sdk_ffi.dart
