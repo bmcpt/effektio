@@ -16,6 +16,8 @@ jobs:
         with:
           channel: stable
       - working-directory: app
-        run: dart analyze
+        run: flutter analyze
+        name: lint app
       - working-directory: effektio_flutter_sdk
-        run: dart analyze
+        run: flutter analyze
+        name: lint effektio_flutter_sdk
