@@ -19,6 +19,8 @@ object Room {
     fn avatar() -> Future<Result<buffer<u8>>>;
 
     fn active_members() -> Future<Result<Vec<RoomMember>>>;
+
+    fn message() -> Future<Result<string>>;
 }
 
 object RoomMember {}

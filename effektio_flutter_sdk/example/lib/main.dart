@@ -1,5 +1,6 @@
 import 'package:effektio_flutter_sdk_example/test_suites/interface.dart';
 import 'package:effektio_flutter_sdk_example/test_suites/login.dart';
+import 'package:effektio_flutter_sdk_example/test_suites/messages.dart';
 import 'package:effektio_flutter_sdk_example/test_suites/profile_image.dart';
 import 'package:flutter/material.dart';
 
@@ -10,6 +11,7 @@ void main() async {
 final testSuites = {
   'Login': () => LoginTest(),
   'Avatar': () => AvatarTest(),
+  'Messages': () => MessagesTest(),
 };
 
 class MyApp extends StatelessWidget {

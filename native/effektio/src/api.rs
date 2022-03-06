@@ -111,15 +111,29 @@ impl Room {
             .await?
     }
 
-    pub async fn messages(&self, start: String, forward: bool) -> Result<Messages> {
+    // pub async fn messages(&self, start: String, forward: bool) -> Result<Vec<String>> {
+    //     let r = self.inner.clone();
+    //     RUNTIME
+    //         .spawn(async move {
+    //             let msg = r.messages(MessagesOptions::new(start.as_str(), if forward { Direction::Forward } else { Direction::Backward })).await.unwrap();
+    //             let ss = msg.chunk.iter()
+    //                 .map(|c| if let AnyRoomEvent::Message(t) = c.event { Some(t) } else { None })
+    //                 .filter(|o| o.is_some())
+    //                 .map(|o| o.unwrap())
+    //                 .collect::<Vec<_>>();
+    //         })
+    //         .await?
+    // }
+
+    pub async fn message(&self) -> Result<String> {
         let r = self.inner.clone();
         RUNTIME
             .spawn(async move {
-                r.messages(MessagesOptions::new(start.as_str(), if forward { Direction::Forward } else { Direction::Backward })).await
-                    .map(|inner| Messages { inner })
-                    .map_err(|e| e.into())
-            })
-            .await?
+                let start = r.last_prev_batch().unwrap();
+                let msg = r.messages(MessagesOptions::backward(start.as_str())).await.unwrap();
+                let ev = msg.chunk.first().unwrap();
+                Ok(ev.event.clone().into_json().to_string())
+            }).await?
     }
 }
 
